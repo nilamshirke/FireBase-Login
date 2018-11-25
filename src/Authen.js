@@ -21,6 +21,8 @@ class Authen extends Component {
         this.login = this.login.bind(this);
         this.signup = this.signup.bind(this);
         this.logout = this.logout.bind(this);
+        this.google = this.google.bind(this);
+
     }
 
     signup(event) {
@@ -57,8 +59,13 @@ class Authen extends Component {
         const auth = firebase.auth();
         
         const promise = auth.signInWithEmailAndPassword(email, password);
-
-        //TODO:: handle login promise
+        promise.then(user => {
+            var lout = document.getElementById('logout');
+      
+            //Write a welcome message for user
+            lout.classList.remove('hide');
+          });
+        
         promise.catch(e => {
             var err = e.message;
             console.log(err);
@@ -77,6 +84,30 @@ class Authen extends Component {
 
     }
 
+    google() {
+        console.log("I'm in google method..");
+
+        var provider = new firebase.auth.GoogleAuthProvider();
+        var promise = firebase.auth().signInWithPopup(provider);
+        //var promise = firebase.auth().signInWithRedirect(provider);
+
+        promise
+        .then( result => {
+            var user =  result.user;
+            console.log(result);
+            firebase.database().ref('/users' + user.uid).set({
+                email: user.email,
+                name: user.displayName  
+            });
+        });
+        promise
+        .catch(e => {
+            var msg = e.message;
+            console.log(msg);
+        });
+
+    }
+
     render() {
 
         return(
@@ -85,8 +116,9 @@ class Authen extends Component {
                 <input id="pass" ref="password" type="password"  placeholder="Enter your Password" /><br />
                 <p>{this.state.err}</p>
                 <button onClick={this.login}>Log In</button>
-                <button onClick={this.signup}>Sign Up</button>
-                <button id='logout' onClick={this.logout}>Log Out</button>
+                <button onClick={this.signup}>Sign Up</button><br/>
+                <button id='logout' onClick={this.logout} className="hide   ">Log Out</button>
+                <button onClick={this.google} id='google' className="google">Sign In with Google</button>
             </div>
         );
 
